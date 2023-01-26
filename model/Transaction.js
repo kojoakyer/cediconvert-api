@@ -2,18 +2,19 @@ const mongoose = require('mongoose');
 
 const transactionSchema = new mongoose.Schema(
     {
-        sellingCoin:{type:String, required:true, unique:true},
-        bankName:{type:String, required:true},
-        accountNumber:{type:String, required:true},
-        categories:{type:Array},
-        size:{type:Array},
-        color:{type:Array},
-        price:{type:String, required:true},
-        inStock:{type:Boolean, default:true},
+
+        sellingCoin:{type:String},
+        bankName:{type:String},
+        accountNumber:{type:String},
+        mobileMoney:{type:String},
+        mobileReference:{type:String},
+        mobileNumber:{type:String},
+        amounttosend:{type:String},
+    
     },
     {timestamps:true}
 )
 
-const Transaction = mongoose.model('Cart', transactionSchema);
+const Transaction = mongoose.model('Transaction', transactionSchema);
 
-module.exports = Cart;
+module.exports = Transaction;
