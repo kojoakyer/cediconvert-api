@@ -2,20 +2,43 @@ const express = require('express')
 const Transaction = require('../model/Transaction')
 
 const router = express.Router()
-
+const dotenv = require('dotenv')
 const crypto = require('crypto');
 
+dotenv.config();
+
 const base = 'BNBUSDT'
-var nowdate = new Date();
-var timestamp = nowdate.getTime(); 
+// var nowdate = new Date();
 
-const query_string = `timestamp=${timestamp}`;
-const apiSecret = '69d8IPfJ9Dq3FaOv5NAfAAeAAHPV0xK7';
+var apiSecret = process.env.SECRET_KEY
 
-const signature = crypto
-.createHmac('sha256', apiSecret)
-.update(query_string)
-.digest('hex')
+
+const getParameters = async ()=>{
+   const response = await  fetch('https://api.binance.com/api/v3/time',{
+    headers:{
+        "X-MBX-APIKEY":process.env.API_KEY
+    }
+})
+    const {serverTime}= await response.json()
+    const query_string = `timestamp=${serverTime}`;
+    const signature = crypto
+    .createHmac('sha256', apiSecret)
+    .update(query_string)
+    .digest('hex')
+
+    console.log(serverTime);
+    console.log(signature);
+
+    return {serverTime,signature}
+    
+}
+
+
+
+
+
+
+
 
 
 router.post('/', async function(req,res){
@@ -51,12 +74,18 @@ router.get('/:id', async function(req,res){
 
 router.get('/binance/trade', async function(req,res){
     try{
-        const response = await fetch(`https://api.binance.com/api/v3/order?symbol=${base}&recvWindow=5000&timestamp=${timestamp}&signature=${signature}`)
+        const {serverTime,signature}= await getParameters()
+        
+        const response = await fetch(`https://api.binance.com/api/v3/order?symbol=${base}&timestamp=${serverTime}&signature=${signature}`,{
+            headers:{
+                "X-MBX-APIKEY":process.env.API_KEY,
+                "signature":signature
+            }
+        })
         .then((response) => response.json())
         .then((data) => console.log(data));
         // console.log(response);
-
-        return response
+        res.status(200).json(response)
     }catch(err){
         console.log(err);
     }
